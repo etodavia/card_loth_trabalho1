@@ -102,7 +102,7 @@ body {
   width: 100%;
   max-width: 1200px;
   height: 100%;
-  padding: 1.5vh 8vw 6vh 8vw;
+  padding: 1.5vh 4vw 6vh 4vw;
   display: flex;
   flex-direction: column;
 }
@@ -136,8 +136,8 @@ body {
   cursor: pointer;
   z-index: 3;
   margin-right: auto;
-  margin-left: 1vw; /* A bit from the edge */
-  margin-top: 5vh; /* A bit down from top */
+  margin-left: 0; /* Extreme left */
+  margin-top: 5vh;
   text-align: center;
 }
 
@@ -490,8 +490,8 @@ body {
   }
 
   .top-qr-block {
-    top: 6vh; /* A bit more down on tablet */
-    left: 1vw; /* A bit more to the left on tablet */
+    top: 6vh;
+    left: 0.5vw; /* Almost touching the edge */
     right: auto;
     position: absolute;
     align-self: auto;
