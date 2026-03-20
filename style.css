@@ -489,9 +489,8 @@ body {
 
   .top-qr-block {
     top: 2vh;
-    right: 2vw;
-    /* Right on tablet */
-    left: auto;
+    left: 2vw; /* Extreme left on tablet as requested */
+    right: auto;
     position: absolute;
     align-self: auto;
   }
