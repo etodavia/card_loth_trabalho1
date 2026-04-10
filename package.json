@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server.js",
+    "start": "npm run build && node server.js",
     "init-db": "node init_sqlite.js"
+
   },
   "devDependencies": {
     "vite": "^7.3.1"
