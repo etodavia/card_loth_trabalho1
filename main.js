@@ -10,8 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchDataAndRender() {
     try {
-        const data = await getCardData();
-        if (!data) throw new Error('Banco de dados Firebase vazio ou inacessível.');
+        const response = await fetch('http://localhost:8080/api/card');
+        const data = await response.json();
+        
+        if (!data) throw new Error('Banco de dados local vazio ou inacessível.');
         populateUI(data);
         applySEOAndTracking(data);
         applyResponsiveBackground(data.backgrounds);
@@ -30,7 +32,7 @@ async function fetchDataAndRender() {
 
     } catch (error) {
         console.error("Failed to load data:", error);
-        document.getElementById('loader').innerHTML = '<p style="color:white; text-align:center; padding: 20px;">Banco de Dados Firebase inativo.<br>Por favor, crie o banco no Console do Firebase e libere o Modo Teste.</p>';
+        document.getElementById('loader').innerHTML = '<p style="color:white; text-align:center; padding: 20px;">Servidor Local Inativo.<br>Certifique-se de que o backend Node.js está rodando.</p>';
     }
 }
 
@@ -44,7 +46,11 @@ function applyResponsiveBackground(bgs) {
         bgUrl = bgs.tabletUrl;
     }
 
-    document.getElementById('body-bg').style.backgroundImage = `url('${bgUrl}')`;
+    const bodyBg = document.getElementById('body-bg');
+    bodyBg.style.backgroundImage = `url('${bgUrl}')`;
+    if (bgs.backgroundColor) {
+        bodyBg.style.backgroundColor = bgs.backgroundColor;
+    }
 }
 
 function populateUI(data) {
@@ -81,25 +87,38 @@ function populateUI(data) {
             el.href = link.url;
             el.target = '_blank';
 
-            // Determine specific colors and icons based on icon or text
-            let colorClass = link.colorClass;
-            let iconType = link.iconType;
-            const text = link.displayText.toLowerCase();
-            const originalIcon = link.iconType.toLowerCase();
+            // Icon mapping from the new 'icon' property in admin
+            let colorClass = 'bg-black';
+            let iconType = 'fas fa-globe';
+            let customStyle = '';
 
-            if (originalIcon.includes('globe') || originalIcon.includes('laptop') || text.includes('site') || text.includes('web')) {
-                colorClass = 'bg-black';
-                iconType = 'fas fa-globe';
-            } else if (originalIcon.includes('instagram') || text.includes('instagram') || text.includes('insta')) {
-                colorClass = 'bg-orange';
-                iconType = 'fab fa-instagram';
-            } else if (originalIcon.includes('facebook') || text.includes('facebook') || text.includes('face')) {
-                colorClass = 'bg-black';
-                iconType = 'fab fa-facebook-f';
+            const iconKey = (link.icon || '').toLowerCase();
+            const iconMap = {
+                'globe': { icon: 'fas fa-globe', bg: 'bg-black' },
+                'instagram': { icon: 'fab fa-instagram', bg: 'bg-instagram' },
+                'facebook': { icon: 'fab fa-facebook-f', bg: 'bg-facebook' },
+                'youtube': { icon: 'fab fa-youtube', bg: 'bg-youtube' },
+                'tiktok': { icon: 'fab fa-tiktok', bg: 'bg-tiktok' },
+                'pinterest': { icon: 'fab fa-pinterest', bg: 'bg-pinterest' },
+                'x-twitter': { icon: 'fab fa-x-twitter', bg: 'bg-x-twitter' },
+                'linkedin': { icon: 'fab fa-linkedin-in', bg: 'bg-linkedin' },
+                'reddit': { icon: 'fab fa-reddit-alien', bg: 'bg-reddit' }
+            };
+
+            if (iconMap[iconKey]) {
+                iconType = iconMap[iconKey].icon;
+                colorClass = iconMap[iconKey].bg;
+            }
+
+            // OVERRIDE with custom color if it's not the default black/empty
+            // We consider #000000 as the "use social color" trigger
+            if (link.customColor && link.customColor !== '#000000') {
+                colorClass = ''; // Clear the class to use inline style
+                customStyle = `background: ${link.customColor};`;
             }
 
             el.innerHTML = `
-                <div class="link-icon ${colorClass}"><i class="${iconType}"></i></div>
+                <div class="link-icon ${colorClass}" style="${customStyle}"><i class="${iconType}"></i></div>
                 <div class="link-text">${link.displayText}</div>
             `;
             linksContainer.appendChild(el);
@@ -114,26 +133,42 @@ function populateUI(data) {
     document.getElementById('rev-subtext').textContent = data.reviewBlock.subtext.replace(/\n/g, '<br>');
     document.getElementById('rev-qr').src = data.reviewBlock.qrCodeUrl;
 
-    // Products
+    // Products (Carousel with 12 items)
     document.getElementById('prod-title').textContent = data.products.sectionTitle;
     const prodContainer = document.getElementById('products-container');
-    const waNumber = data.profile.whatsappNumber; // Fallback to profile number
+    const waNumber = data.profile.whatsappNumber;
     prodContainer.innerHTML = '';
+    
     if (data.products.items) {
         data.products.items.forEach(prod => {
-            const waMessage = encodeURIComponent(`Quero saber mais sobre ${prod.title}`);
-            const div = document.createElement('a'); // Anchor tag for links
-            div.href = `https://wa.me/${waNumber}?text=${waMessage}`;
-            div.target = '_blank';
-            div.className = 'product-card gsap-prod';
-            div.style.textDecoration = 'none';
-            div.style.color = 'inherit';
-            div.innerHTML = `
+            const waMessage = encodeURIComponent(`Quero mais informações sobre ${prod.title}`);
+            const card = document.createElement('div');
+            card.className = 'product-card gsap-prod';
+            
+            card.innerHTML = `
                 <img src="${prod.imgUrl}" alt="${prod.title}" class="product-img">
                 <p class="product-title">${prod.title}</p>
+                <div class="prod-btn-row">
+                    ${prod.pdfUrl ? `<a href="${prod.pdfUrl}" target="_blank" class="btn-mini btn-pdf"><i class="fas fa-file-pdf"></i> PDF</a>` : ''}
+                    <a href="https://wa.me/${waNumber}?text=${waMessage}" target="_blank" class="btn-mini btn-zap-mini"><i class="fab fa-whatsapp"></i> ZAP</a>
+                </div>
             `;
-            prodContainer.appendChild(div);
+            prodContainer.appendChild(card);
         });
+    }
+
+    // Carousel Navigation Logic
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    if (nextBtn && prevBtn && prodContainer) {
+        nextBtn.onclick = () => {
+            const scrollAmount = prodContainer.clientWidth * 0.8;
+            prodContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        };
+        prevBtn.onclick = () => {
+            const scrollAmount = prodContainer.clientWidth * 0.8;
+            prodContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        };
     }
 
     // Footer

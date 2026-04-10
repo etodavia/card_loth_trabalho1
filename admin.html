@@ -1,539 +1,294 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Painel Admin - Finance Card</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <title>Dashboard Admin v2 - Loth Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --main-color: #0b2239;
-        }
+        :root { --sidebar-bg: #111111; --accent-color: #ff9b50; --bg-body: #f4f7fa; --border: #e2e8f0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-body); color: #333; height: 100vh; overflow: hidden; display: flex; }
 
-        body {
-            background: #f1f5f9;
-            color: #333;
-            padding: 40px;
-            font-family: 'Montserrat', sans-serif;
-        }
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .login-box { background: #ffffff; padding: 40px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #eee; color: #333; }
+        .login-logo { max-width: 200px; margin-bottom: 30px; }
+        .login-box input { width: 100%; padding: 14px; margin: 8px 0; background: #f8f9fa; border: 1px solid #ddd; border-radius: 10px; color: #333; outline: none; }
+        .login-box button { width: 100%; padding: 16px; margin-top: 15px; background: #000; color: white; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .login-box button:hover { background: var(--accent-color); }
+        .login-footer { margin-top: 25px; display: flex; flex-direction: column; gap: 10px; }
+        .login-footer a { color: #888; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+        .login-footer a:hover { color: #333; }
 
-        #admin-app {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
+        .dashboard-container { display: none; width: 100%; height: 100vh; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 30px 0; }
+        .sidebar-brand { padding: 0 30px 40px; font-size: 1.5rem; font-weight: 950; }
+        .menu-item { padding: 15px 30px; display: flex; align-items: center; gap: 12px; color: #777; text-decoration: none; cursor: pointer; border-left: 4px solid transparent; }
+        .menu-item:hover, .menu-item.active { color: white; background: #1a1a1a; }
+        .menu-item.active { border-left-color: var(--accent-color); color: white; }
 
-        h1,
-        h2 {
-            color: var(--main-color);
-            margin-bottom: 20px;
-        }
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; }
+        .top-bar { height: 70px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; }
+        .content-area { flex: 1; padding: 40px; overflow-y: auto; }
+        
+        .card { background: white; border-radius: 15px; padding: 30px; border: 1px solid var(--border); margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .section-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 25px; color: #000; border-bottom: 3px solid var(--accent-color); display: inline-block; padding-bottom: 5px;}
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; font-weight: 700; color: #888; margin-bottom: 8px; text-transform: uppercase; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; transition: 0.2s; }
+        input:focus { border-color: var(--accent-color); outline: none; }
+        
+        .save-bar { position: sticky; bottom: -40px; margin: 20px -40px -40px; padding: 25px 40px; background: #fff; display: flex; justify-content: flex-end; border-top: 1px solid var(--border); z-index: 100; }
+        .btn-save { background: #000; color: white; padding: 15px 50px; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-save:hover { background: var(--accent-color); transform: translateY(-3px); }
 
-        .section {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .section h3 {
-            margin-top: 0;
-            color: #444;
-            border-bottom: 2px solid #eaeaea;
-            padding-bottom: 5px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-            font-size: 0.9rem;
-        }
-
-        input,
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            font-family: 'Montserrat', sans-serif;
-            box-sizing: border-box;
-        }
-
-        .form-group input[type="text"],
-        .form-group input[type="email"],
-        .form-group input[type="password"],
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        .image-input-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .image-input-group input[type="text"] {
-            flex-grow: 1;
-        }
-
-        .image-input-group label.upload-btn {
-            background-color: #3b3f51;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            white-space: nowrap;
-        }
-
-        .image-input-group label.upload-btn:hover {
-            opacity: 0.9;
-        }
-
-        .image-input-group input[type="file"] {
-            display: none;
-        }
-
-        .upload-status {
-            font-size: 0.8rem;
-            color: #e6007e;
-            display: none;
-            margin-top: 5px;
-        }
-
-        button.save {
-            background: var(--main-color);
-            color: white;
-            border: none;
-            padding: 15px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        button.save:hover {
-            opacity: 0.9;
-        }
-
-        .toast {
-            display: none;
-            background: #10b981;
-            color: white;
-            padding: 15px;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        .nav-links {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: var(--main-color);
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .nav-links a:hover {
-            text-decoration: underline;
-        }
-
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #232630;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .login-box h2 {
-            margin-top: 0;
-            color: #3b3f51;
-        }
-
-        .login-box button {
-            background: #ff9b50;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            width: 100%;
-            transition: opacity 0.3s;
-        }
-
-        .login-box button:hover {
-            opacity: 0.9;
-        }
-
-        .login-logo {
-            margin-top: 30px;
-            max-width: 250px;
-            opacity: 1;
-        }
-
-        .nav-links {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .nav-links-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-                /* Responsividade / Mobile */
-        @media (max-width: 768px) {
-            body {
-                padding: 15px;
-            }
-            #admin-app {
-                padding: 15px;
-            }
-            .nav-links {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            .nav-links h1 {
-                font-size: 1.6rem;
-                margin-bottom: 0;
-            }
-            .nav-links-right {
-                width: 100%;
-                justify-content: space-around;
-            }
-            .section {
-                padding: 15px;
-            }
-            .image-input-group {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 5px;
-            }
-            .image-input-group input[type="text"] {
-                width: 100%;
-            }
-            .image-input-group label.upload-btn {
-                text-align: center;
-                margin-top: 5px;
-            }
-            table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-            .login-box {
-                padding: 25px 20px;
-                max-width: 90%;
-            }
-        }
-
+        .toast { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 15px 30px; border-radius: 10px; z-index: 20000; display: none; font-weight: 700; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .link-block { background: #f8f9fc; padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #edf2f7; }
+        .color-group { display: flex; align-items: center; gap: 15px; }
+        .color-group input[type="color"] { width: 60px; height: 45px; padding: 5px; cursor: pointer; }
     </style>
 </head>
 
 <body>
     <div id="login-screen" class="login-overlay">
         <div class="login-box">
-            <h2>Área Restrita</h2>
-            <div class="form-group">
-                <input type="email" id="admin-email" placeholder="Digite seu e-mail de administrador"
-                    onkeypress="if(event.key === 'Enter') checkLogin()">
-            </div>
-            <div class="form-group">
-                <input type="password" id="admin-password" placeholder="Digite a senha"
-                    onkeypress="if(event.key === 'Enter') checkLogin()">
-            </div>
-            <button onclick="checkLogin()">Entrar</button>
-            <p id="login-error" style="color: red; display: none; margin-top: 10px; font-size: 0.9rem;">E-mail ou Senha
-                incorretos.
-            </p>
-            <p style="margin-top: 15px; font-size: 0.85rem;">
-                <a href="#" onclick="forgotPassword()" style="color: #3b3f51; text-decoration: underline;">Esqueci minha
-                    senha</a>
-            </p>
-            <div style="margin-top: 20px;">
-                <img src="/logo-loth.png" alt="Logotipo Loth" class="login-logo">
+            <img src="loth01branca.png" alt="LOTH" class="login-logo" style="background: #111; padding: 10px; border-radius: 8px;">
+            <div class="form-group"><input type="email" id="admin-email" placeholder="E-mail"></div>
+            <div class="form-group"><input type="password" id="admin-password" placeholder="Senha"></div>
+            <button onclick="checkLogin()">ENTRAR NO PAINEL</button>
+            <p id="login-error" style="color: #ff4d4d; display: none; margin-top: 15px; font-size: 0.8rem; font-weight:700;">Credenciais inválidas.</p>
+            
+            <div class="login-footer">
+                <a href="#" onclick="forgotPassword()">Esqueci minha senha</a>
+                <a href="index.html">← Voltar para o cartão</a>
             </div>
         </div>
     </div>
-    <div id="admin-app" style="display: none;">
-        <div class="nav-links">
-            <h1>Painel Administrativo</h1>
-            <div class="nav-links-right">
-                <a href="/" target="_blank">Ver Cartão Digital &rarr;</a>
-                <a href="#" onclick="logout()" style="color: #e6007e;">Sair <i class="fas fa-sign-out-alt"></i></a>
-            </div>
-        </div>
 
-        <div id="toast" class="toast">Dados salvos com sucesso!</div>
+    <div id="admin-app" class="main-wrapper" style="display:none; flex-direction:row;">
+        <nav class="sidebar">
+            <div class="sidebar-brand">LOTH.</div>
+            <a onclick="showTab('tab-identity')" class="menu-item active" id="btn-tab-identity"><i class="fas fa-palette"></i> Identidade</a>
+            <a onclick="showTab('tab-profile')" class="menu-item" id="btn-tab-profile"><i class="fas fa-user-circle"></i> Perfil</a>
+            <a onclick="showTab('tab-links')" class="menu-item" id="btn-tab-links"><i class="fas fa-link"></i> Links e Botões</a>
+            <a onclick="showTab('tab-address')" class="menu-item" id="btn-tab-address"><i class="fas fa-map-marker-alt"></i> Endereço</a>
+            <a onclick="showTab('tab-products')" class="menu-item" id="btn-tab-products"><i class="fas fa-star"></i> Meus Serviços</a>
+            <a onclick="showTab('tab-seo')" class="menu-item" id="btn-tab-seo"><i class="fas fa-chart-line"></i> SEO / Pixel</a>
+            <a onclick="showTab('tab-security')" class="menu-item" id="btn-tab-security"><i class="fas fa-shield-alt"></i> Acesso</a>
+            <div style="margin-top:auto; padding: 20px 30px; border-top: 1px solid #222;"><a href="#" onclick="logout()" style="color:#ff4d4d; text-decoration:none; font-weight:700;"><i class="fas fa-sign-out-alt"></i> Sair</a></div>
+        </nav>
 
-        <form id="admin-form">
+        <div class="main-wrapper">
+            <header class="top-bar">
+                <div style="font-weight:700; color:#555;">Dashboard / <span id="current-tab-name" style="color:var(--accent-color);">Identidade</span></div>
+                <div style="display:flex; gap: 20px; align-items:center;">
+                    <a href="/" target="_blank" style="text-decoration:none; color:#111; font-weight:800; border:2px solid #edeff5; padding:8px 15px; border-radius:8px; font-size:0.8rem;">ABRIR CARTÃO <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </header>
 
-            <div class="section">
-                <h2>Cabeçalho & Backgrounds</h2>
+            <main class="content-area">
+                <form id="admin-form">
+                    <div id="toast" class="toast">Salvo com sucesso!</div>
 
-                <div class="form-group">
-                    <label>Logo Empresa (Texto ou URL de Imagem)</label>
-                    <div class="image-input-group">
-                        <input type="text" id="hdr-logo">
-                        <label class="upload-btn">
-                            <i class="fas fa-upload"></i> Subir Imagem
-                            <input type="file" accept="image/*" onchange="uploadFile(this, 'hdr-logo')">
-                        </label>
+                    <!-- TAB: Identidade -->
+                    <div class="tab-content" id="tab-identity">
+                        <div class="card">
+                            <div class="section-title">Logo e Cabeçalho</div>
+                            <div class="form-grid">
+                                <div class="form-group"><label>URL da Logo</label><input type="text" id="hdr-logo"><input type="file" onchange="uploadFile(this, 'hdr-logo')" style="font-size:0.7rem; margin-top:5px;"></div>
+                                <div class="form-group"><label>QR Code Topo</label><input type="text" id="hdr-qrTop"><input type="file" onchange="uploadFile(this, 'hdr-qrTop')" style="font-size:0.7rem; margin-top:5px;"></div>
+                                <div class="form-group" style="grid-column: span 2;"><label>Slogan (Tagline)</label><textarea id="hdr-tagline" rows="2"></textarea></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="section-title">Cores e Fundo</div>
+                            <div class="form-grid">
+                                <div class="form-group"><label>Cor do Fundo</label><input type="color" id="bg-color"></div>
+                                <div class="form-group"><label>Imagem Mobile</label><input type="text" id="bg-mobile"></div>
+                                <div class="form-group"><label>Imagem Tablet</label><input type="text" id="bg-tablet"></div>
+                                <div class="form-group"><label>Imagem Desktop</label><input type="text" id="bg-desktop"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="upload-status" id="status-hdr-logo">Fazendo upload...</div>
-                </div>
 
-                <div class="form-group"><label>Slogan (Tagline)</label><textarea id="hdr-tagline" rows="2"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>URL QR Code Topo (Clique Aqui)</label>
-                    <div class="image-input-group">
-                        <input type="text" id="hdr-qrTop">
-                        <label class="upload-btn">
-                            <i class="fas fa-upload"></i> Subir Imagem
-                            <input type="file" accept="image/*" onchange="uploadFile(this, 'hdr-qrTop')">
-                        </label>
+                    <!-- TAB: Perfil -->
+                    <div class="tab-content" id="tab-profile" style="display:none;">
+                        <div class="card">
+                            <div class="section-title">Seu Perfil</div>
+                            <div class="form-grid">
+                                <div class="form-group"><label>Nome</label><input type="text" id="prof-name"></div>
+                                <div class="form-group"><label>Cargo</label><input type="text" id="prof-title"></div>
+                                <div class="form-group"><label>WhatsApp</label><input type="text" id="prof-waNumber"></div>
+                                <div class="form-group" style="grid-column: span 2;"><label>Mensagem WA</label><textarea id="prof-waText" rows="2"></textarea></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="upload-status" id="status-hdr-qrTop">Fazendo upload...</div>
-                </div>
 
-                <h3 style="margin-top:20px; font-size: 1rem;">Fundos Responsivos (URLs)</h3>
-                <div class="form-group">
-                    <label>Fundo Mobile</label>
-                    <div class="image-input-group">
-                        <input type="text" id="bg-mobile">
-                        <label class="upload-btn">
-                            <i class="fas fa-upload"></i> Subir
-                            <input type="file" accept="image/*" onchange="uploadFile(this, 'bg-mobile')">
-                        </label>
+                    <!-- TAB: Links -->
+                    <div class="tab-content" id="tab-links" style="display:none;">
+                        <div class="card">
+                            <div class="section-title">Botões de Ação</div>
+                            
+                            <!-- B1 -->
+                            <div class="link-block">
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Botão 1 - Texto</label><input type="text" id="link-1-text"></div>
+                                    <div class="form-group"><label>Botão 1 - Ícone da Rede</label>
+                                        <select id="link-1-icon">
+                                            <option value="globe">Site (Globo)</option>
+                                            <option value="instagram">Instagram</option>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="youtube">YouTube</option>
+                                            <option value="tiktok">TikTok</option>
+                                            <option value="pinterest">Pinterest</option>
+                                            <option value="x-twitter">X (Twitter)</option>
+                                            <option value="linkedin">LinkedIn</option>
+                                            <option value="reddit">Reddit</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group"><label>Cor Personalizada (Opcional)</label><div class="color-group"><input type="color" id="link-1-color"> <small>Deixe em preto se quiser o padrão da rede</small></div></div>
+                                    <div class="form-group"><label>Botão 1 - URL Link</label><input type="text" id="link-1-url"></div>
+                                </div>
+                            </div>
+
+                            <!-- B2 -->
+                            <div class="link-block">
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Botão 2 - Texto</label><input type="text" id="link-2-text"></div>
+                                    <div class="form-group"><label>Botão 2 - Ícone da Rede</label>
+                                        <select id="link-2-icon">
+                                            <option value="globe">Site (Globo)</option>
+                                            <option value="instagram">Instagram</option>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="youtube">YouTube</option>
+                                            <option value="tiktok">TikTok</option>
+                                            <option value="pinterest">Pinterest</option>
+                                            <option value="x-twitter">X (Twitter)</option>
+                                            <option value="linkedin">LinkedIn</option>
+                                            <option value="reddit">Reddit</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group"><label>Cor Personalizada (Opcional)</label><div class="color-group"><input type="color" id="link-2-color"></div></div>
+                                    <div class="form-group"><label>Botão 2 - URL Link</label><input type="text" id="link-2-url"></div>
+                                </div>
+                            </div>
+
+                            <!-- B3 -->
+                            <div class="link-block">
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Botão 3 - Texto</label><input type="text" id="link-3-text"></div>
+                                    <div class="form-group"><label>Botão 3 - Ícone da Rede</label>
+                                        <select id="link-3-icon">
+                                            <option value="globe">Site (Globo)</option>
+                                            <option value="instagram">Instagram</option>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="youtube">YouTube</option>
+                                            <option value="tiktok">TikTok</option>
+                                            <option value="pinterest">Pinterest</option>
+                                            <option value="x-twitter">X (Twitter)</option>
+                                            <option value="linkedin">LinkedIn</option>
+                                            <option value="reddit">Reddit</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group"><label>Cor Personalizada (Opcional)</label><div class="color-group"><input type="color" id="link-3-color"></div></div>
+                                    <div class="form-group"><label>Botão 3 - URL Link</label><input type="text" id="link-3-url"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="upload-status" id="status-bg-mobile">Fazendo upload...</div>
-                </div>
 
-                <div class="form-group">
-                    <label>Fundo Tablet</label>
-                    <div class="image-input-group">
-                        <input type="text" id="bg-tablet">
-                        <label class="upload-btn">
-                            <i class="fas fa-upload"></i> Subir
-                            <input type="file" accept="image/*" onchange="uploadFile(this, 'bg-tablet')">
-                        </label>
+                    <!-- TAB: Outras -->
+                    <div class="tab-content" id="tab-address" style="display:none;">
+                        <div class="card"><div class="section-title">Endereço</div><div class="form-group"><label>Título</label><input type="text" id="addr-title"></div><div class="form-group"><label>Linhas</label><textarea id="addr-lines" rows="3"></textarea></div></div>
+                        <div class="card"><div class="section-title">Avaliações</div><div class="form-group"><label>Título</label><input type="text" id="rev-title"></div><div class="form-group"><label>Subtexto</label><input type="text" id="rev-subtext"></div><div class="form-group"><label>QR Code</label><input type="text" id="rev-qr"></div></div>
                     </div>
-                    <div class="upload-status" id="status-bg-tablet">Fazendo upload...</div>
-                </div>
 
-                <div class="form-group">
-                    <label>Fundo Desktop</label>
-                    <div class="image-input-group">
-                        <input type="text" id="bg-desktop">
-                        <label class="upload-btn">
-                            <i class="fas fa-upload"></i> Subir
-                            <input type="file" accept="image/*" onchange="uploadFile(this, 'bg-desktop')">
-                        </label>
+                    <div class="tab-content" id="tab-products" style="display:none;">
+                        <div class="card">
+                            <div class="section-title">Carrossel de Serviços (Até 12 Caixas)</div>
+                            <div class="form-group"><label>Título da Seção</label><input type="text" id="prod-title"></div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" id="services-entries">
+                                <!-- Slots will be generated here by JS or hardcoded for safety -->
+                                <!-- We'll create a scrollable grid of slots -->
+                            </div>
+
+                            <!-- Simplified hardcoded slots for direct access -->
+                            <div style="max-height: 500px; overflow-y: auto; padding-right: 10px;">
+                                <div id="service-slots-container"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="upload-status" id="status-bg-desktop">Fazendo upload...</div>
-                </div>
-            </div>
 
-            <div class="section">
-                <h2>Perfil do Consultor</h2>
-                <div class="form-group"><label>Nome</label><input type="text" id="prof-name" required></div>
-                <div class="form-group"><label>Cargo / Título</label><input type="text" id="prof-title" required></div>
-                <div class="form-group"><label>Número do WhatsApp (Ex: 5500999999999)</label><input type="text"
-                        id="prof-waNumber" required></div>
-                <div class="form-group"><label>Texto do Botão WhatsApp (pode usar \n para quebrar
-                        linha)</label><textarea id="prof-waText" rows="2"></textarea></div>
-            </div>
-
-            <div class="section">
-                <h2>Links Principais (Pílulas)</h2>
-                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">A edição avançada de ícones fica no
-                    JSON, altere aqui os textos e URLs básicos.</p>
-                <div class="form-group"><label>Link 1 (Website) - Texto</label><input type="text" id="link-1-text">
-                </div>
-                <div class="form-group"><label>Link 1 (Website) - URL</label><input type="text" id="link-1-url"></div>
-
-                <div class="form-group"><label>Link 2 (Instagram) - Texto</label><input type="text" id="link-2-text">
-                </div>
-                <div class="form-group"><label>Link 2 (Instagram) - URL</label><input type="text" id="link-2-url"></div>
-
-                <div class="form-group"><label>Link 3 (Facebook) - Texto</label><input type="text" id="link-3-text">
-                </div>
-                <div class="form-group"><label>Link 3 (Facebook) - URL</label><input type="text" id="link-3-url"></div>
-            </div>
-
-            <div class="section">
-                <h2>Endereço & Avaliação</h2>
-                <div class="form-group"><label>Título Bloco Endereço</label><input type="text" id="addr-title"></div>
-                <div class="form-group"><label>Endereço Completo</label><textarea id="addr-lines" rows="3"></textarea>
-                </div>
-
-                <div class="form-group"><label>Título Bloco Avaliação</label><input type="text" id="rev-title"></div>
-                <div class="form-group"><label>Subtexto (Sua opinião importa)</label><textarea id="rev-subtext"
-                        rows="2"></textarea></div>
-                <div class="form-group">
-                    <label>URL QR Code Google Meu Negócio</label>
-                    <div class="image-input-group">
-                        <input type="text" id="rev-qr">
-                        <label class="upload-btn">
-                            <i class="fas fa-upload"></i> Subir
-                            <input type="file" accept="image/*" onchange="uploadFile(this, 'rev-qr')">
-                        </label>
+                    <div class="tab-content" id="tab-seo" style="display:none;">
+                        <div class="card"><div class="section-title">Rastreamento e SEO</div><div class="form-grid"><div><label>SEO Title</label><input type="text" id="seo-title"></div><div><label>SEO Desc</label><textarea id="seo-desc"></textarea></div><div><label>FB Pixel</label><input type="text" id="tracking-fb-pixel"></div><div><label>GTM Head</label><textarea id="tracking-gtm-head"></textarea></div><div><label>GTM Body</label><textarea id="tracking-gtm-body"></textarea></div></div></div>
                     </div>
-                    <div class="upload-status" id="status-rev-qr">Fazendo upload...</div>
-                </div>
-            </div>
-    </div>
 
-    <div class="section">
-        <h2>Produtos ou Serviços</h2>
-        <div class="form-group"><label>Título da Seção</label><input type="text" id="prod-title"></div>
-        <table style="width: 100%; text-align: left; font-size: 0.9rem;">
-            <tr>
-                <th>#</th>
-                <th>Imagem URL</th>
-                <th>Nome do Produto</th>
-            </tr>
-            <tr>
-                <td>1</td>
-                <td>
-                    <div class="image-input-group" style="gap:5px;">
-                        <input type="text" id="prod-1-img" style="padding: 5px;">
-                        <label class="upload-btn" style="padding: 5px 10px;">
-                            <i class="fas fa-upload"></i>
-                            <input type="file" accept="image/*" onchange="uploadFile(this, 'prod-1-img')">
-                        </label>
+                    <div class="tab-content" id="tab-security" style="display:none;">
+                        <div class="card">
+                            <div class="section-title">Acesso Admin</div>
+                            <div class="form-grid">
+                                <div><label>Email Admin</label><input type="email" id="sec-email"></div>
+                                <div><label>Senha Admin</label><input type="text" id="sec-password"></div>
+                                <div style="grid-column: span 2; margin-top:20px; padding:20px; background:#fff5f0; border-radius:10px;">
+                                    <label style="color:#d46b08;">Chave de Recuperação Master</label>
+                                    <input type="text" id="sec-recovery-key" placeholder="Ex: MinhaFraseSecreta123">
+                                    <p style="font-size:0.7rem; color:#888; margin-top:5px;">Esta chave será usada para criar uma nova senha caso você a esqueça.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="upload-status" id="status-prod-1-img">Enviando...</div>
-                </td>
-                <td><input type="text" id="prod-1-name" style="padding: 5px;"></td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>
-                    <div class="image-input-group" style="gap:5px;">
-                        <input type="text" id="prod-2-img" style="padding: 5px;">
-                        <label class="upload-btn" style="padding: 5px 10px;">
-                            <i class="fas fa-upload"></i>
-                            <input type="file" accept="image/*" onchange="uploadFile(this, 'prod-2-img')">
-                        </label>
-                    </div>
-                    <div class="upload-status" id="status-prod-2-img">Enviando...</div>
-                </td>
-                <td><input type="text" id="prod-2-name" style="padding: 5px;"></td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td>
-                    <div class="image-input-group" style="gap:5px;">
-                        <input type="text" id="prod-3-img" style="padding: 5px;">
-                        <label class="upload-btn" style="padding: 5px 10px;">
-                            <i class="fas fa-upload"></i>
-                            <input type="file" accept="image/*" onchange="uploadFile(this, 'prod-3-img')">
-                        </label>
-                    </div>
-                    <div class="upload-status" id="status-prod-3-img">Enviando...</div>
-                </td>
-                <td><input type="text" id="prod-3-name" style="padding: 5px;"></td>
-            </tr>
-        </table>
-    </div>
 
-    <!-- Rodapé section was removed to make it non-editable -->
-
-    <div class="section">
-        <h2>SEO & Rastreamento</h2>
-        <div class="form-group">
-            <label>Título do Site (Aba do Navegador / SEO)</label>
-            <input type="text" id="seo-title">
-        </div>
-        <div class="form-group">
-            <label>Descrição Oculta (SEO / Compartilhamento)</label>
-            <textarea id="seo-desc" rows="2"></textarea>
-        </div>
-        <div class="form-group">
-            <label>ID do Facebook Pixel</label>
-            <input type="text" id="tracking-fb-pixel" placeholder="Ex: 123456789012345">
-        </div>
-        <div class="form-group">
-            <label>Google Tag Manager (Head Code)</label>
-            <textarea id="tracking-gtm-head" rows="4"
-                placeholder="Cole o bloco exato `<script>...</script>`"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Google Tag Manager (Body Code)</label>
-            <textarea id="tracking-gtm-body" rows="4"
-                placeholder="Cole o bloco exato `<noscript>...</noscript>`"></textarea>
+                    <div class="save-bar"><button type="submit" class="btn-save">SALVAR TUDO AGORA</button></div>
+                </form>
+            </main>
         </div>
     </div>
 
-    <div class="section">
-        <h2>Segurança</h2>
-        <div class="form-group"><label>E-mail de Acesso (Recuperação de Senha)</label><input type="email" id="sec-email"
-                required></div>
-        <div class="form-group"><label>Senha de Acesso do Admin</label><input type="text" id="sec-password" required>
-        </div>
-    </div>
+    <script>
+        window.forgotPassword = async function () {
+            try {
+                const response = await fetch('http://localhost:8080/api/card');
+                const data = await response.json();
 
-    <button type="submit" class="save">Salvar Alterações</button>
-    </form>
-    </div>
+                const inputKey = prompt("Digite sua Chave de Recuperação Master:");
+                
+                if (!inputKey) return;
+
+                if (inputKey === data.securityKey) {
+                    const newPwd = prompt("Chave correta! Digite sua NOVA SENHA:");
+                    if (newPwd) {
+                        data.adminPassword = newPwd;
+                        const saveRes = await fetch('http://localhost:8080/api/card', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        if (saveRes.ok) {
+                            alert("Sucesso! Sua nova senha foi salva. Use-a para entrar agora.");
+                            _fullData = data;
+                        }
+                    }
+                } else {
+                    alert("Chave de recuperação incorreta.");
+                }
+            } catch (e) {
+                alert("Erro ao tentar recuperar a senha.");
+            }
+        };
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById('btn-' + id).classList.add('active');
+            const titles = {'tab-identity':'Identidade','tab-profile':'Perfil','tab-links':'Configurar Links','tab-address':'Local','tab-products':'Serviços','tab-seo':'Rastreamento','tab-security':'Segurança'};
+            document.getElementById('current-tab-name').innerText = titles[id] || 'Painel';
+        }
+    </script>
     <script type="module" src="./admin.js"></script>
 </body>
-
 </html>

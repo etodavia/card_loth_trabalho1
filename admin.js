@@ -1,214 +1,239 @@
-import { getCardData, saveCardData, uploadImageToStorage } from './firebase.js';
+// admin.js - Versão Carrossel 12 Itens
+import { uploadImageToStorage } from './firebase.js';
+
+let _fullData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
-    document.getElementById('admin-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await saveData();
-    });
+    const form = document.getElementById('admin-form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveData();
+        });
+    }
 });
-
-let _fullData = null; // Store to maintain properties not explicitly in form
 
 async function loadData() {
     try {
-        const data = await getCardData();
-        if (!data) throw new Error('Firebase Database not configured or empty');
+        const response = await fetch('http://localhost:8080/api/card');
+        const data = await response.json();
         _fullData = data;
 
-        // Header & Backgrounds
-        document.getElementById('hdr-logo').value = data.header.logoUrl || '';
-        document.getElementById('hdr-tagline').value = data.header.tagline;
-        document.getElementById('hdr-qrTop').value = data.header.topQrCodeUrl;
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.value = val || '';
+        };
 
-        document.getElementById('bg-mobile').value = data.backgrounds.mobileUrl;
-        document.getElementById('bg-tablet').value = data.backgrounds.tabletUrl;
-        document.getElementById('bg-desktop').value = data.backgrounds.desktopUrl;
+        // Identidade
+        setVal('hdr-logo', data.header?.logoUrl);
+        setVal('hdr-tagline', data.header?.tagline);
+        setVal('hdr-qrTop', data.header?.topQrCodeUrl);
+        setVal('bg-color', data.backgrounds?.backgroundColor);
+        setVal('bg-mobile', data.backgrounds?.mobileUrl);
+        setVal('bg-tablet', data.backgrounds?.tabletUrl);
+        setVal('bg-desktop', data.backgrounds?.desktopUrl);
 
-        // Profile
-        document.getElementById('prof-name').value = data.profile.name;
-        document.getElementById('prof-title').value = data.profile.title;
-        document.getElementById('prof-waNumber').value = data.profile.whatsappNumber;
-        document.getElementById('prof-waText').value = data.profile.whatsappText;
+        // Perfil
+        setVal('prof-name', data.profile?.name);
+        setVal('prof-title', data.profile?.title);
+        setVal('prof-waNumber', data.profile?.whatsappNumber);
+        setVal('prof-waText', data.profile?.whatsappText);
 
-        // Links
-        if (data.links && data.links.length >= 3) {
-            document.getElementById('link-1-text').value = data.links[0].displayText;
-            document.getElementById('link-1-url').value = data.links[0].url;
-            document.getElementById('link-2-text').value = data.links[1].displayText;
-            document.getElementById('link-2-url').value = data.links[1].url;
-            document.getElementById('link-3-text').value = data.links[2].displayText;
-            document.getElementById('link-3-url').value = data.links[2].url;
+        // Links 1, 2, 3
+        if (data.links) {
+            for (let i = 1; i <= 3; i++) {
+                const l = data.links[i - 1] || {};
+                setVal(`link-${i}-text`, l.displayText);
+                setVal(`link-${i}-icon`, l.icon);
+                setVal(`link-${i}-color`, l.customColor);
+                setVal(`link-${i}-url`, l.url);
+            }
         }
 
-        // Address & Review
-        document.getElementById('addr-title').value = data.addressBlock.title;
-        document.getElementById('addr-lines').value = data.addressBlock.lines;
-        document.getElementById('rev-title').value = data.reviewBlock.title;
-        document.getElementById('rev-subtext').value = data.reviewBlock.subtext;
-        document.getElementById('rev-qr').value = data.reviewBlock.qrCodeUrl;
-
-        // Products
-        document.getElementById('prod-title').value = data.products.sectionTitle;
-        if (data.products.items && data.products.items.length >= 3) {
-            document.getElementById('prod-1-img').value = data.products.items[0].imgUrl;
-            document.getElementById('prod-1-name').value = data.products.items[0].title;
-            document.getElementById('prod-2-img').value = data.products.items[1].imgUrl;
-            document.getElementById('prod-2-name').value = data.products.items[1].title;
-            document.getElementById('prod-3-img').value = data.products.items[2].imgUrl;
-            document.getElementById('prod-3-name').value = data.products.items[2].title;
+        // Serviços - Gerar 12 Slots Dinamicamente
+        setVal('prod-title', data.products?.sectionTitle);
+        const slotsContainer = document.getElementById('service-slots-container');
+        if (slotsContainer) {
+            slotsContainer.innerHTML = '';
+            for (let i = 1; i <= 12; i++) {
+                const item = data.products?.items?.[i - 1] || {};
+                const div = document.createElement('div');
+                div.className = 'link-block';
+                div.innerHTML = `
+                    <label style="color:#000; font-weight:900;">CAIXA ${i}</label>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Título</label>
+                            <input type="text" id="prod-${i}-name" value="${item.title || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Foto do Serviço</label>
+                            <input type="text" id="prod-${i}-img" value="${item.imgUrl || ''}">
+                            <input type="file" onchange="uploadFile(this, 'prod-${i}-img')" style="font-size:0.7rem; margin-top:5px;">
+                            <small id="status-prod-${i}-img" style="display:none;"></small>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Arquivo PDF (Download)</label>
+                            <input type="text" id="prod-${i}-pdf" value="${item.pdfUrl || ''}">
+                            <input type="file" onchange="uploadFile(this, 'prod-${i}-pdf')" style="font-size:0.7rem; margin-top:5px;">
+                            <small id="status-prod-${i}-pdf" style="display:none;"></small>
+                        </div>
+                    </div>
+                `;
+                slotsContainer.appendChild(div);
+            }
         }
 
-        // Footer removed from admin
+        // Endereço e Outros
+        setVal('addr-title', data.addressBlock?.title);
+        setVal('addr-lines', data.addressBlock?.lines);
+        setVal('rev-title', data.reviewBlock?.title);
+        setVal('rev-subtext', data.reviewBlock?.subtext);
+        setVal('rev-qr', data.reviewBlock?.qrCodeUrl);
 
-        // SEO & Tracking (Fallbacks incase they don't exist yet)
-        const seo = data.seo || { title: '', description: '' };
-        const tracking = data.tracking || { fbPixel: '', gtmHead: '', gtmBody: '' };
+        setVal('seo-title', data.seo?.title);
+        setVal('seo-desc', data.seo?.description);
+        setVal('tracking-fb-pixel', data.tracking?.fbPixel);
+        setVal('tracking-gtm-head', data.tracking?.gtmHead);
+        setVal('tracking-gtm-body', data.tracking?.gtmBody);
+        setVal('sec-email', data.adminEmail);
+        setVal('sec-password', data.adminPassword);
+        setVal('sec-recovery-key', data.securityKey);
 
-        document.getElementById('seo-title').value = seo.title;
-        document.getElementById('seo-desc').value = seo.description;
-        document.getElementById('tracking-fb-pixel').value = tracking.fbPixel;
-        document.getElementById('tracking-gtm-head').value = tracking.gtmHead;
-        document.getElementById('tracking-gtm-body').value = tracking.gtmBody;
-
-        // Security
-        document.getElementById('sec-email').value = data.adminEmail || 'admin@teste.com';
-        document.getElementById('sec-password').value = data.adminPassword || '12345';
-    } catch (e) {
-        alert("Erro ao conectar com API HTTP em http://localhost:3000");
-    }
+    } catch (e) { console.error(e); }
 }
 
 async function saveData() {
-    // Reconstruct data, preserving structure for links
-    _fullData.header.logoUrl = document.getElementById('hdr-logo').value;
-    _fullData.header.tagline = document.getElementById('hdr-tagline').value;
-    _fullData.header.topQrCodeUrl = document.getElementById('hdr-qrTop').value;
+    if (!_fullData) return;
+    const getVal = (id) => document.getElementById(id)?.value || '';
 
-    _fullData.backgrounds.mobileUrl = document.getElementById('bg-mobile').value;
-    _fullData.backgrounds.tabletUrl = document.getElementById('bg-tablet').value;
-    _fullData.backgrounds.desktopUrl = document.getElementById('bg-desktop').value;
+    _fullData.header.logoUrl = getVal('hdr-logo');
+    _fullData.header.tagline = getVal('hdr-tagline');
+    _fullData.header.topQrCodeUrl = getVal('hdr-qrTop');
+    _fullData.backgrounds.backgroundColor = getVal('bg-color');
+    _fullData.backgrounds.mobileUrl = getVal('bg-mobile');
+    _fullData.backgrounds.tabletUrl = getVal('bg-tablet');
+    _fullData.backgrounds.desktopUrl = getVal('bg-desktop');
 
-    _fullData.profile.name = document.getElementById('prof-name').value;
-    _fullData.profile.title = document.getElementById('prof-title').value;
-    _fullData.profile.whatsappNumber = document.getElementById('prof-waNumber').value;
-    _fullData.profile.whatsappText = document.getElementById('prof-waText').value;
+    _fullData.profile.name = getVal('prof-name');
+    _fullData.profile.title = getVal('prof-title');
+    _fullData.profile.whatsappNumber = getVal('prof-waNumber');
+    _fullData.profile.whatsappText = getVal('prof-waText');
 
-    _fullData.links[0].displayText = document.getElementById('link-1-text').value;
-    _fullData.links[0].url = document.getElementById('link-1-url').value;
-    _fullData.links[1].displayText = document.getElementById('link-2-text').value;
-    _fullData.links[1].url = document.getElementById('link-2-url').value;
-    _fullData.links[2].displayText = document.getElementById('link-3-text').value;
-    _fullData.links[2].url = document.getElementById('link-3-url').value;
+    // Salvar Links
+    _fullData.links = [];
+    for (let i = 1; i <= 3; i++) {
+        _fullData.links.push({
+            displayText: getVal(`link-${i}-text`),
+            icon: getVal(`link-${i}-icon`),
+            customColor: getVal(`link-${i}-color`),
+            url: getVal(`link-${i}-url`)
+        });
+    }
 
-    _fullData.addressBlock.title = document.getElementById('addr-title').value;
-    _fullData.addressBlock.lines = document.getElementById('addr-lines').value;
-    _fullData.reviewBlock.title = document.getElementById('rev-title').value;
-    _fullData.reviewBlock.subtext = document.getElementById('rev-subtext').value;
-    _fullData.reviewBlock.qrCodeUrl = document.getElementById('rev-qr').value;
+    // Salvar 12 Serviços
+    _fullData.products.sectionTitle = getVal('prod-title');
+    _fullData.products.items = [];
+    for (let i = 1; i <= 12; i++) {
+        const title = getVal(`prod-${i}-name`);
+        const imgUrl = getVal(`prod-${i}-img`);
+        const pdfUrl = getVal(`prod-${i}-pdf`);
+        if (title || imgUrl) {
+            _fullData.products.items.push({ title, imgUrl, pdfUrl });
+        }
+    }
 
-    _fullData.products.sectionTitle = document.getElementById('prod-title').value;
-    _fullData.products.items[0].imgUrl = document.getElementById('prod-1-img').value;
-    _fullData.products.items[0].title = document.getElementById('prod-1-name').value;
-    _fullData.products.items[1].imgUrl = document.getElementById('prod-2-img').value;
-    _fullData.products.items[1].title = document.getElementById('prod-2-name').value;
-    _fullData.products.items[2].imgUrl = document.getElementById('prod-3-img').value;
-    _fullData.products.items[2].title = document.getElementById('prod-3-name').value;
-    _fullData.products.items[2].title = document.getElementById('prod-3-name').value;
-    // Footer logic removed
+    _fullData.addressBlock.title = getVal('addr-title');
+    _fullData.addressBlock.lines = getVal('addr-lines');
+    _fullData.reviewBlock.title = getVal('rev-title');
+    _fullData.reviewBlock.subtext = getVal('rev-subtext');
+    _fullData.reviewBlock.qrCodeUrl = getVal('rev-qr');
 
-    // SEO & Tracking
-    if (!_fullData.seo) _fullData.seo = {};
-    if (!_fullData.tracking) _fullData.tracking = {};
-
-    _fullData.seo.title = document.getElementById('seo-title').value;
-    _fullData.seo.description = document.getElementById('seo-desc').value;
-    _fullData.tracking.fbPixel = document.getElementById('tracking-fb-pixel').value;
-    _fullData.tracking.gtmHead = document.getElementById('tracking-gtm-head').value;
-    _fullData.tracking.gtmBody = document.getElementById('tracking-gtm-body').value;
-
-    _fullData.adminEmail = document.getElementById('sec-email').value;
-    _fullData.adminPassword = document.getElementById('sec-password').value;
+    _fullData.seo = { title: getVal('seo-title'), description: getVal('seo-desc') };
+    _fullData.tracking = { fbPixel: getVal('tracking-fb-pixel'), gtmHead: getVal('tracking-gtm-head'), gtmBody: getVal('tracking-gtm-body') };
+    _fullData.adminEmail = getVal('sec-email');
+    _fullData.adminPassword = getVal('sec-password');
+    _fullData.securityKey = getVal('sec-recovery-key');
 
     try {
-        const success = await saveCardData(_fullData);
-        if (success) {
+        const response = await fetch('http://localhost:8080/api/card', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(_fullData)
+        });
+        if (response.ok) {
             const toast = document.getElementById('toast');
             toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 3000);
-        } else {
-            alert("Erro ao salvar dados no Firebase Firestore.");
         }
-    } catch (e) {
-        alert("Erro fatal ao salvar no Firebase.");
-    }
+    } catch (e) { alert("Erro ao salvar."); }
 }
 
-window.forgotPassword = function () {
-    alert("Como o Firebase oficial foi conectado agora, em breve poderemos usar a Autenticação do Firebase nativa para redefinir senha!");
-};
-
 window.checkLogin = async function () {
-    const emailInput = document.getElementById('admin-email').value;
-    const pwdInput = document.getElementById('admin-password').value;
+    const email = document.getElementById('admin-email').value;
+    const pwd = document.getElementById('admin-password').value;
     try {
-        const data = await getCardData();
-
-        if (pwdInput === data.adminPassword && emailInput.toLowerCase() === data.adminEmail.toLowerCase()) {
+        const response = await fetch('http://localhost:8080/api/card');
+        const data = await response.json();
+        if (pwd === data.adminPassword && email.toLowerCase() === data.adminEmail.toLowerCase()) {
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('admin-app').style.display = 'block';
+            document.getElementById('admin-app').style.display = 'flex';
         } else {
             document.getElementById('login-error').style.display = 'block';
         }
-    } catch (e) {
-        alert("Erro ao conectar com Firebase!");
-    }
-};
-
-window.uploadFile = async function (inputElement, targetInputId) {
-    const file = inputElement.files[0];
-    if (!file) return;
-
-    const statusEl = document.getElementById(`status-${targetInputId}`);
-    const targetInput = document.getElementById(targetInputId);
-
-    // Provide immediate UI feedback
-    statusEl.style.display = 'block';
-    statusEl.style.color = '#e6007e'; // Pink loading color
-    statusEl.innerText = "Fazendo upload...";
-
-    try {
-        // We'll store images in a folder named 'uploads' with a unique timestamp filename
-        const extension = file.name.split('.').pop();
-        const uniqueFilename = `uploads/${Date.now()}_${Math.random().toString(36).substring(7)}.${extension}`;
-
-        const downloadURL = await uploadImageToStorage(file, uniqueFilename);
-
-        // Success
-        targetInput.value = downloadURL;
-        statusEl.style.color = '#4CAF50'; // Green success color
-        statusEl.innerText = "Imagem enviada com sucesso!";
-
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-            statusEl.style.display = 'none';
-        }, 3000);
-
-    } catch (error) {
-        statusEl.style.color = 'red';
-        statusEl.innerText = "Erro ao enviar imagem.";
-        console.error("Upload failed", error);
-    }
+    } catch (e) { alert("Erro de conexão."); }
 };
 
 window.logout = function () {
-    // Clear the password field for security (keeping email for convenience)
     document.getElementById('admin-password').value = '';
-
-    // Hide the app and show the login screen
     document.getElementById('admin-app').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
+};
 
-    // Hide any previous error messages
-    document.getElementById('login-error').style.display = 'none';
+window.forgotPassword = async function () {
+    try {
+        const response = await fetch('http://localhost:8080/api/card');
+        const data = await response.json();
+        const key = prompt("Digite sua Chave Master:");
+        if (key === data.securityKey) {
+            const n = prompt("Nova senha:");
+            if (n) {
+                data.adminPassword = n;
+                await fetch('http://localhost:8080/api/card', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                alert("Senha alterada!");
+            }
+        }
+    } catch (e) { }
+};
+
+window.uploadFile = async function (input, targetId) {
+    const file = input.files[0];
+    if (!file) return;
+    const status = document.getElementById('status-' + targetId);
+    if (status) {
+        status.style.display = 'inline-block';
+        status.style.color = '#ff9b50';
+        status.innerText = "⏳ Enviando...";
+    }
+    try {
+        const path = `uploads/${Date.now()}_${file.name}`;
+        const url = await uploadImageToStorage(file, path);
+        document.getElementById(targetId).value = url;
+        if (status) {
+            status.style.color = '#10b981';
+            status.innerText = "✅ Pronto!";
+            setTimeout(() => { status.style.display = 'none'; }, 3000);
+        }
+    } catch (e) { 
+        if (status) {
+            status.style.color = '#ef4444';
+            status.innerText = "❌ Erro no upload";
+        }
+        console.error(e); 
+    }
 };
