@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadData() {
-    try {
-        const response = await fetch('http://localhost:8080/api/card');
+        const response = await fetch('/api/card');
+
         const data = await response.json();
         _fullData = data;
 
@@ -156,8 +156,8 @@ async function saveData() {
     _fullData.adminPassword = getVal('sec-password');
     _fullData.securityKey = getVal('sec-recovery-key');
 
-    try {
-        const response = await fetch('http://localhost:8080/api/card', {
+        const response = await fetch('/api/card', {
+
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(_fullData)
@@ -173,8 +173,8 @@ async function saveData() {
 window.checkLogin = async function () {
     const email = document.getElementById('admin-email').value;
     const pwd = document.getElementById('admin-password').value;
-    try {
-        const response = await fetch('http://localhost:8080/api/card');
+        const response = await fetch('/api/card');
+
         const data = await response.json();
         if (pwd === data.adminPassword && email.toLowerCase() === data.adminEmail.toLowerCase()) {
             document.getElementById('login-screen').style.display = 'none';
@@ -192,15 +192,14 @@ window.logout = function () {
 };
 
 window.forgotPassword = async function () {
-    try {
-        const response = await fetch('http://localhost:8080/api/card');
+        const response = await fetch('/api/card');
+
         const data = await response.json();
         const key = prompt("Digite sua Chave Master:");
         if (key === data.securityKey) {
             const n = prompt("Nova senha:");
-            if (n) {
-                data.adminPassword = n;
-                await fetch('http://localhost:8080/api/card', {
+                await fetch('/api/card', {
+
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
