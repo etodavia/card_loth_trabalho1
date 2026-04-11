@@ -20,11 +20,12 @@ COPY . .
 RUN npm run build
 
 # Expõe a porta que o server.js usa
-EXPOSE 8080
+EXPOSE 3000
 
 # Define a variável de ambiente para produção
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=3000
+
 
 # Comando para iniciar a aplicação de forma direta
 CMD ["node", "server.js"]
