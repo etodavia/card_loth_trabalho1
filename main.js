@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchDataAndRender() {
     try {
-        const response = await fetch('http://localhost:8080/api/card');
+        const response = await fetch('/api/card');
+
         const data = await response.json();
         
         if (!data) throw new Error('Banco de dados local vazio ou inacessível.');
