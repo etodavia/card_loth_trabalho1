@@ -8,8 +8,16 @@ import path from 'path';
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// RASTREADOR DE ACESSOS (Para Debug)
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
+app.use(cors({ origin: '*', methods: ['GET', 'POST'] }));
 app.use(express.json());
+
 
 const PORT = process.env.PORT || 8080;
 const DB_FILE = process.env.DB_FILE || 'database.sqlite';
