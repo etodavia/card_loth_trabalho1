@@ -19,7 +19,8 @@ app.use(cors({ origin: '*', methods: ['GET', 'POST'] }));
 app.use(express.json());
 
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
+
 const DB_FILE = process.env.DB_FILE || 'database.sqlite';
 const DATA_FILE = path.join(process.cwd(), 'data.json');
 
