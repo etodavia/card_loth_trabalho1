@@ -1,0 +1,90 @@
+{
+  "id": "main",
+  "header": {
+    "logoUrl": "https://firebasestorage.googleapis.com/v0/b/carddigitalloth-a0e92.firebasestorage.app/o/uploads%2F1775844559673_n2dgzd.png?alt=media&token=1eaab6d0-2f3d-4e9c-8d19-5f7f86748ad0",
+    "tagline": "loth.\nESTRATÉGIA E RESULTADO",
+    "topQrCodeUrl": "/assets/qr-top.png"
+  },
+  "backgrounds": {
+    "mobileUrl": "/assets/bg-mobile.png",
+    "tabletUrl": "/assets/bg-tablet.png",
+    "desktopUrl": "/assets/bg-desktop.png",
+    "backgroundColor": "#1743d3"
+  },
+  "profile": {
+    "name": "Lorena Dantas",
+    "title": "marketing & assessoria",
+    "whatsappNumber": "00999999999",
+    "whatsappText": "AGENDE UMA REUNIÃO\n(00) 99999-9999"
+  },
+  "links": [
+    {
+      "displayText": "www.seuswebsite.com.br",
+      "icon": "globe",
+      "customColor": "#ff6600",
+      "url": "#"
+    },
+    {
+      "displayText": "@seuperfilnoinstagram",
+      "icon": "",
+      "customColor": "#000000",
+      "url": "#"
+    },
+    {
+      "displayText": "@seuperfilnofacebook",
+      "icon": "",
+      "customColor": "#000000",
+      "url": "#"
+    }
+  ],
+  "addressBlock": {
+    "title": "Entre Aspas",
+    "lines": "Rua : Beka alameda de s/a 235 - filixa\nCEP 14254785\nCidade - Estado - Brasil",
+    "phrase": "Frase de Destaque Personalizada"
+  },
+  "reviewBlock": {
+    "title": "Avalie nossa Empresa",
+    "subtext": "sua opinião é importante para nós!",
+    "qrCodeUrl": "/assets/qr-review.png"
+  },
+  "products": {
+    "sectionTitle": "Serviços da Agência",
+    "items": [
+      {
+        "title": "Serviço de finanças",
+        "imgUrl": "/assets/prod1.png",
+        "pdfUrl": ""
+      },
+      {
+        "title": "Serviço de finanças",
+        "imgUrl": "/assets/prod2.png",
+        "pdfUrl": ""
+      },
+      {
+        "title": "Serviço de finanças",
+        "imgUrl": "/assets/prod3.png",
+        "pdfUrl": ""
+      },
+      {
+        "title": "Atividade Teste",
+        "imgUrl": "https://firebasestorage.googleapis.com/v0/b/carddigitalloth-a0e92.firebasestorage.app/o/uploads%2F1775850567025_photo-1552664730-d307ca884978.avif?alt=media&token=c3a74a5c-7be8-45c5-b17e-906a43980ec9",
+        "pdfUrl": "https://firebasestorage.googleapis.com/v0/b/carddigitalloth-a0e92.firebasestorage.app/o/uploads%2F1775850583304_manual.pdf?alt=media&token=77d7429a-09e4-43b0-8d63-f0bcf1cbf9ef"
+      }
+    ]
+  },
+  "footer": {
+    "text": "App elaborado por Loth Digital\nTodos os direitos reservados @2026"
+  },
+  "seo": {
+    "title": "Loth Digital - Lorena Dantas",
+    "description": "Acesse nosso cartão digital e conheça nossos serviços."
+  },
+  "tracking": {
+    "fbPixel": "",
+    "gtmHead": "",
+    "gtmBody": ""
+  },
+  "adminEmail": "loth.mktdigital@gmail.com",
+  "adminPassword": "Lmktd.242509*",
+  "securityKey": ""
+}

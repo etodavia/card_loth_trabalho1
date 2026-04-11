@@ -2,8 +2,7 @@ node_modules/
 dist/
 .env
 .env.local
-data.json
-server.js
 upload.js
+
 .DS_Store
 Thumbs.db

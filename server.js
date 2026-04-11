@@ -85,9 +85,10 @@ app.post('/api/card', async (req, res) => {
 });
 
 // Handle SPA routing: send all other requests to index.html
-app.get('*', (req, res) => {
+app.get('*path', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
+
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando em http://0.0.0.0:${PORT}`);
